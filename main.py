@@ -187,7 +187,7 @@ def main_keyboard(chat_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🧨 Полит-стопы", callback_data=callback("stop", chat_id))],
-            [InlineKeyboardButton(text="АСУ-слова", callback_data=callback("asu", chat_id))],
+            [InlineKeyboardButton(text="⚠️ АСУ-слова", callback_data=callback("asu", chat_id))],
             [InlineKeyboardButton(text="❤️ Предупреждения", callback_data=callback("warns", chat_id))],
             [InlineKeyboardButton(text="📣 Сообщение в чат", callback_data=callback("send_message", chat_id))],
             [InlineKeyboardButton(text="🎲 Реплики бота", callback_data=callback("phrases", chat_id))],

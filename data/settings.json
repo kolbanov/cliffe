@@ -1,0 +1,7 @@
+{
+  "defaults": {
+    "warn_limit": 5,
+    "mute_days": 1
+  },
+  "chats": {}
+}

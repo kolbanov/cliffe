@@ -528,6 +528,27 @@ async def cmd_chatid(message: Message) -> None:
     await message.reply(f"chat_id этого сервера: <code>{message.chat.id}</code>")
 
 
+async def cmd_testasu(message: Message) -> None:
+    if not message.text:
+        return
+
+    text = message.text.partition(" ")[2].strip()
+    if not text:
+        await message.reply("напиши так: <code>/testasu нигретос</code>")
+        return
+
+    hit = asu_matcher.find(text)
+    if hit:
+        await message.reply(
+            "ASU-матчер сработал:\n"
+            f"словарь: <code>{escape(hit.word)}</code>\n"
+            f"фрагмент: <code>{escape(hit.matched_text)}</code>"
+        )
+        return
+
+    await message.reply("ASU-матчер не сработал на этот текст")
+
+
 async def cmd_hp(message: Message) -> None:
     if not message.from_user:
         return
@@ -575,6 +596,9 @@ async def cmd_config(message: Message, bot: Bot) -> None:
         f"TG_GROUP_CHAT_IDS raw: <code>{escape(raw)}</code>",
         f"TG_GROUP_CHAT_IDS parsed: <code>{escape(parsed)}</code>",
         f"known_chats: <code>{len(known)}</code>",
+        f"ASU-слов в памяти: <code>{asu_matcher.count()}</code>",
+        f"ASU-слова первые 20: <code>{escape(', '.join(asu_matcher.words()[:20]))}</code>",
+        f"ASU-фраз: <code>{len(storage.get_phrases('asu'))}</code>",
     ]
 
     await append_current_chat_diagnostics(lines, message, bot)
@@ -1149,6 +1173,7 @@ async def main() -> None:
     dp.message.register(cmd_panel, Command("panel"))
     dp.message.register(cmd_connect, Command("connect"))
     dp.message.register(cmd_chatid, Command("chatid"))
+    dp.message.register(cmd_testasu, Command("testasu"))
     dp.message.register(cmd_config, Command("config"))
     dp.message.register(cmd_hp, Command("hp"))
     dp.message.register(cmd_bite, Command("bite"))

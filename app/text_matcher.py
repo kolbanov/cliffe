@@ -286,6 +286,12 @@ class TextMatcher:
             if pattern is not None:
                 self._patterns.append((word, pattern))
 
+    def words(self) -> list[str]:
+        return [word for word, _pattern in self._patterns]
+
+    def count(self) -> int:
+        return len(self._patterns)
+
     def find(self, text: str | None) -> MatchResult | None:
         if not text:
             return None

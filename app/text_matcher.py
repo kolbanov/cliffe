@@ -107,6 +107,32 @@ A_ENDINGS = [
     "ах",
 ]
 
+KA_ENDINGS = [
+    "а",
+    "и",
+    "е",
+    "у",
+    "ой",
+    "ою",
+    "ам",
+    "ами",
+    "ах",
+    "ок",
+]
+
+SKA_ENDINGS = [
+    "ка",
+    "ки",
+    "ке",
+    "ку",
+    "кой",
+    "кою",
+    "кам",
+    "ками",
+    "ках",
+    "ок",
+]
+
 EC_ENDINGS = [
     "ец",
     "ца",
@@ -118,6 +144,29 @@ EC_ENDINGS = [
     "цам",
     "цами",
     "цах",
+]
+
+ENOK_ENDINGS = [
+    "енок",
+    "ёнок",
+    "енка",
+    "ёнка",
+    "енку",
+    "ёнку",
+    "енком",
+    "ёнком",
+    "енке",
+    "ёнке",
+    "енки",
+    "ёнки",
+    "енков",
+    "ёнков",
+    "енкам",
+    "ёнкам",
+    "енками",
+    "ёнками",
+    "енках",
+    "ёнках",
 ]
 
 ENGLISH_ENDINGS = ["", "s", "es"]
@@ -171,6 +220,18 @@ def candidate_forms(word: str) -> list[str]:
     if word.endswith("ец"):
         stem = word[:-2]
         return unique_keep_order([stem + ending for ending in EC_ENDINGS])
+
+    if word.endswith(("енок", "ёнок")):
+        stem = word[:-4]
+        return unique_keep_order([stem + ending for ending in ENOK_ENDINGS])
+
+    if word.endswith("ска"):
+        stem = word[:-2]
+        return unique_keep_order([stem + ending for ending in SKA_ENDINGS])
+
+    if word.endswith("ка"):
+        stem = word[:-1]
+        return unique_keep_order([stem + ending for ending in KA_ENDINGS])
 
     # дума, пропаганда, либераха, рашка...
     if word.endswith("а"):

@@ -30,17 +30,39 @@ class TextMatcherAsuTest(unittest.TestCase):
         self.assertIsNone(self.matcher.find(text), text)
 
     def test_requested_asu_forms_are_detected(self) -> None:
-        for text in ["негр", "нига", "нигер", "пидр", "пидарас"]:
+        for text in ["негр", "нига", "нигер", "пидр", "пидарас", "нигретос", "негретос", "негретоска"]:
+            with self.subTest(text=text):
+                self.assert_hits(text)
+
+    def test_related_asu_forms_are_detected(self) -> None:
+        for text in ["негритос", "негритоска", "нигритос", "нигритоска", "нигретоска"]:
             with self.subTest(text=text):
                 self.assert_hits(text)
 
     def test_common_inflected_forms_are_detected(self) -> None:
-        for text in ["негра", "негром", "нигеров", "пидру", "пидарасами", "пидорасов"]:
+        for text in [
+            "негра",
+            "негром",
+            "нигеров",
+            "негретосом",
+            "нигретосов",
+            "негретоски",
+            "нигретосок",
+            "нигритосками",
+            "пидру",
+            "пидарасами",
+            "пидорасов",
+        ]:
+            with self.subTest(text=text):
+                self.assert_hits(text)
+
+    def test_enok_forms_are_detected(self) -> None:
+        for text in ["негритенок", "негритёнок", "негритенка", "негритёнку", "негритенками"]:
             with self.subTest(text=text):
                 self.assert_hits(text)
 
     def test_obfuscated_forms_are_detected(self) -> None:
-        for text in ["н.е.г.р", "нннииигггааа", "п-и-д-р", "п1д@р@с"]:
+        for text in ["н.е.г.р", "нннииигггааа", "н-е-г-р-е-т-о-с", "п-и-д-р", "п1д@р@с"]:
             with self.subTest(text=text):
                 self.assert_hits(text)
 

@@ -126,6 +126,17 @@ def parse_words(text: str) -> list[str]:
     return words
 
 
+def parse_command_words(text: str) -> list[str]:
+    words: list[str] = []
+    seen: set[str] = set()
+    for chunk in re.split(r"[,;\s]+", text):
+        value = chunk.strip().lower().strip(".,!?()[]{}<>\"'«»“”„`")
+        if value and value not in seen:
+            words.append(value)
+            seen.add(value)
+    return words
+
+
 def parse_phrase_lines(text: str) -> list[str]:
     phrases: list[str] = []
     seen: set[str] = set()
@@ -549,6 +560,50 @@ async def cmd_testasu(message: Message) -> None:
     await message.reply("ASU-матчер не сработал на этот текст")
 
 
+async def add_dictionary_words_from_command(message: Message, bot: Bot, kind: str) -> None:
+    if not message.from_user:
+        return
+
+    if message.chat.type not in {ChatType.GROUP, ChatType.SUPERGROUP}:
+        await message.reply("эта команда работает в группе")
+        return
+
+    if not await is_group_admin(bot, message.chat.id, message.from_user.id):
+        await message.reply("добавлять слова могут только админы")
+        return
+
+    command_text = message.text or message.caption or ""
+    argument_text = command_text.partition(" ")[2].strip()
+    source_text = argument_text
+
+    if not source_text and message.reply_to_message:
+        source_text = message.reply_to_message.text or message.reply_to_message.caption or ""
+
+    words = parse_command_words(source_text)
+    if not words:
+        command = "pol" if kind == "stop" else "asu"
+        await message.reply(f"напиши так: <code>/{command} слово</code> или ответь командой на сообщение")
+        return
+
+    added = storage.add_words(kind, words)
+    rebuild_matchers()
+
+    title = "полит-стопы" if kind == "stop" else "ASU-слова"
+    if not added:
+        await message.reply(f"ничего не изменилось: эти {title} уже были в словаре")
+        return
+
+    await message.reply(f"добавлено в {title}:\n" + "\n".join(f"• {escape(word)}" for word in added))
+
+
+async def cmd_pol(message: Message, bot: Bot) -> None:
+    await add_dictionary_words_from_command(message, bot, "stop")
+
+
+async def cmd_asu(message: Message, bot: Bot) -> None:
+    await add_dictionary_words_from_command(message, bot, "asu")
+
+
 async def cmd_hp(message: Message) -> None:
     if not message.from_user:
         return
@@ -910,6 +965,9 @@ async def handle_group_message(message: Message, bot: Bot) -> None:
     if not text:
         return
 
+    if text.lstrip().startswith("/"):
+        return
+
     politics_hit = stop_matcher.find(text)
     if politics_hit:
         # Приоритет стоп-слова выше ASU: если стоп-слово найдено, ASU-реакцию не делаем.
@@ -1171,6 +1229,8 @@ async def main() -> None:
     dp.message.register(cmd_connect, Command("connect"))
     dp.message.register(cmd_chatid, Command("chatid"))
     dp.message.register(cmd_testasu, Command("testasu"))
+    dp.message.register(cmd_pol, Command("pol"))
+    dp.message.register(cmd_asu, Command("asu"))
     dp.message.register(cmd_config, Command("config"))
     dp.message.register(cmd_hp, Command("hp"))
     dp.message.register(cmd_bite, Command("bite"))

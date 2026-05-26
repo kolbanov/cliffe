@@ -15,9 +15,11 @@ def load_json(path: str) -> object:
         return json.load(file)
 
 
-class TextMatcherAsuTest(unittest.TestCase):
+class TextMatcherTestCase(unittest.TestCase):
+    words_path = ""
+
     def setUp(self) -> None:
-        words = load_json("data/asu_words.json")
+        words = load_json(self.words_path)
         letter_mapping = load_json("data/letter_mapping.json")
         self.assertIsInstance(words, list)
         self.assertIsInstance(letter_mapping, dict)
@@ -28,6 +30,40 @@ class TextMatcherAsuTest(unittest.TestCase):
 
     def assert_misses(self, text: str) -> None:
         self.assertIsNone(self.matcher.find(text), text)
+
+
+class TextMatcherPoliticsTest(TextMatcherTestCase):
+    words_path = "data/stop_words_politics.json"
+
+    def test_related_hohol_forms_are_detected(self) -> None:
+        for text in [
+            "Хохляндия",
+            "хохляндии",
+            "хохляндский",
+            "хохляндского",
+            "Хохляндец",
+            "хохляндца",
+            "хохлянка",
+            "хохлянок",
+            "хохландия",
+            "хохландского",
+            "хохландец",
+            "хохланок",
+            "хохляцкий",
+            "хохлятина",
+            "хохлярой",
+            "хохлёнок",
+            "хохленками",
+            "хохлостан",
+            "хохлостанца",
+            "хохлостанские",
+        ]:
+            with self.subTest(text=text):
+                self.assert_hits(text)
+
+
+class TextMatcherAsuTest(TextMatcherTestCase):
+    words_path = "data/asu_words.json"
 
     def test_requested_asu_forms_are_detected(self) -> None:
         for text in ["негр", "нига", "нигер", "пидр", "пидарас", "нигретос", "негретос", "негретоска"]:

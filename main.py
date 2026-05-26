@@ -359,6 +359,50 @@ async def is_group_admin(bot: Bot, chat_id: int, user_id: int) -> bool:
     return member.status in {ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR}
 
 
+def yes_no(value: bool | None) -> str:
+    if value is None:
+        return "неизвестно"
+    return "да" if value else "нет"
+
+
+async def append_current_chat_diagnostics(lines: list[str], message: Message, bot: Bot) -> None:
+    if message.chat.type not in {ChatType.GROUP, ChatType.SUPERGROUP}:
+        return
+
+    lines.extend(
+        [
+            "",
+            "<b>текущая группа</b>",
+            f"title: <code>{escape(message.chat.title or message.chat.id)}</code>",
+            f"chat_id: <code>{message.chat.id}</code>",
+        ]
+    )
+
+    try:
+        bot_user = await bot.get_me()
+        bot_member = await bot.get_chat_member(message.chat.id, bot_user.id)
+        bot_status = str(bot_member.status)
+        bot_can_restrict = bool(getattr(bot_member, "can_restrict_members", False))
+    except (TelegramBadRequest, TelegramForbiddenError):
+        bot_status = "не удалось проверить"
+        bot_can_restrict = None
+
+    user_is_admin = False
+    if message.from_user:
+        user_is_admin = await is_group_admin(bot, message.chat.id, message.from_user.id)
+
+    lines.extend(
+        [
+            f"статус бота: <code>{escape(bot_status)}</code>",
+            f"бот может ограничивать участников: <code>{yes_no(bot_can_restrict)}</code>",
+            f"ты админ здесь: <code>{yes_no(user_is_admin)}</code>",
+        ]
+    )
+
+    if bot_can_restrict is False:
+        lines.append("дай боту админку с правом ограничивать участников, иначе муты не сработают")
+
+
 async def delete_safely(message: Message) -> None:
     try:
         await message.delete()
@@ -532,6 +576,8 @@ async def cmd_config(message: Message, bot: Bot) -> None:
         f"TG_GROUP_CHAT_IDS parsed: <code>{escape(parsed)}</code>",
         f"known_chats: <code>{len(known)}</code>",
     ]
+
+    await append_current_chat_diagnostics(lines, message, bot)
 
     if known:
         lines.append("")

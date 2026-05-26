@@ -913,9 +913,6 @@ async def handle_group_message(message: Message, bot: Bot) -> None:
     politics_hit = stop_matcher.find(text)
     if politics_hit:
         # Приоритет стоп-слова выше ASU: если стоп-слово найдено, ASU-реакцию не делаем.
-        # Но автомодерация политических слов админов не трогает.
-        if await is_group_admin(bot, message.chat.id, message.from_user.id):
-            return
         await issue_warning(
             bot=bot,
             chat_id=message.chat.id,
